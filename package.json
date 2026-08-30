@@ -1,0 +1,23 @@
+{
+  "name": "n8n-admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Internal, safety-focused administration console for a single n8n Docker Swarm service.",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/server.js && node --check src/config.js && node --check src/docker.js && node --check src/database.js && node --check src/maintenance.js && node --check src/auth.js && node --check src/logger.js && node --check public/app.js"
+  },
+  "dependencies": {
+    "dockerode": "^5.0.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "pg": "^8.23.0"
+  }
+}

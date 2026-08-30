@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es-CL">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0e1216">
+    <title>n8n Admin</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body>
+    <!--
+      THESIS: An incident-ready maintenance ledger that makes the live n8n service state and the exact consequences of control actions impossible to miss; it rejects the generic dashboard card grid.
+      OWN-WORLD: Near-black control-room surface, crisp graphite rules, one signal amber for active work, and explicit green/red/yellow service states with dense tabular numerals.
+      STORY: An internal operator sees service health, queue pressure, and concurrency, then takes one deliberate protected action with live stage feedback.
+      FIRST VIEWPORT: A compact masthead feeds a two-column service and queue board; the main maintenance rail sits directly below, with the destructive queue action visibly isolated.
+      FORM: Operations ledger / control room instrument panel, position 7 of the grounded direction list; seed key d182c212.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+    -->
+    <div class="app-shell">
+      <header class="masthead">
+        <div>
+          <a class="wordmark" href="/" aria-label="n8n Admin home">n8n <span>Admin</span></a>
+          <p class="subtitle">Control protegido para un único servicio n8n en Docker Swarm.</p>
+        </div>
+        <div class="masthead-actions">
+          <span class="refresh-note" id="refreshNote">Cargando estado en tiempo real…</span>
+          <button class="button button-secondary" id="refreshButton" type="button">Actualizar</button>
+        </div>
+      </header>
+
+      <main>
+        <div class="flash" id="flash" role="status" aria-live="polite" hidden></div>
+
+        <section class="system-board" aria-labelledby="systemHeading">
+          <div class="section-heading">
+            <h1 id="systemHeading">Estado actual del sistema</h1>
+            <span class="status-copy" id="overallStatus">VERIFICANDO</span>
+          </div>
+
+          <div class="status-layout">
+            <section class="service-ledger" aria-labelledby="serviceHeading">
+              <h2 id="serviceHeading">Servicios</h2>
+              <div class="service-row" id="n8nServiceRow" data-status="unknown">
+                <span class="status-mark" aria-hidden="true"></span>
+                <div class="service-name">
+                  <strong>n8n</strong>
+                  <span id="n8nStatus">VERIFICANDO</span>
+                </div>
+                <dl class="service-values">
+                  <div><dt>Réplicas</dt><dd id="n8nReplicas">—</dd></div>
+                  <div><dt>Concurrencia</dt><dd id="n8nConcurrency">—</dd></div>
+                </dl>
+              </div>
+              <div class="service-row" id="postgresServiceRow" data-status="unknown">
+                <span class="status-mark" aria-hidden="true"></span>
+                <div class="service-name">
+                  <strong>PostgreSQL</strong>
+                  <span id="postgresStatus">VERIFICANDO</span>
+                </div>
+                <p class="service-note" id="postgresNote">Comprobando conexión a la base de datos</p>
+              </div>
+            </section>
+
+            <section class="queue-bank" aria-labelledby="queueHeading">
+              <h2 id="queueHeading">Cola de ejecuciones</h2>
+              <div class="queue-values">
+                <div class="queue-value">
+                  <span>NEW</span>
+                  <strong id="queueNew">—</strong>
+                </div>
+                <div class="queue-value">
+                  <span>RUNNING</span>
+                  <strong id="queueRunning">—</strong>
+                </div>
+              </div>
+              <p class="queue-note">Los valores se leen directamente de la cola PostgreSQL de n8n.</p>
+            </section>
+          </div>
+        </section>
+
+        <section class="control-deck" aria-labelledby="controlsHeading">
+          <div class="section-heading">
+            <h2 id="controlsHeading">Controles de mantenimiento</h2>
+            <p>Solo puede ejecutarse una operación administrativa a la vez.</p>
+          </div>
+          <div class="control-actions">
+            <button class="button button-secondary" id="stopButton" type="button">Detener n8n</button>
+            <button class="button button-secondary" id="startButton" type="button">Iniciar n8n</button>
+            <button class="button button-danger" id="cleanButton" type="button">Limpiar cola n8n</button>
+          </div>
+        </section>
+
+        <section class="concurrency-section" aria-labelledby="concurrencyHeading">
+          <div class="section-heading">
+            <div>
+              <h2 id="concurrencyHeading">Concurrencia</h2>
+              <p>Actual: <strong id="currentConcurrency">—</strong></p>
+            </div>
+            <p class="section-guidance">El cambio detiene n8n antes para evitar una colisión de puerto en modo host.</p>
+          </div>
+          <div class="concurrency-options" id="concurrencyOptions" aria-label="Límites de concurrencia disponibles">
+            <button type="button" data-concurrency="20">20</button>
+            <button type="button" data-concurrency="30">30</button>
+            <button type="button" data-concurrency="40">40</button>
+            <button type="button" data-concurrency="50">50</button>
+            <button type="button" data-concurrency="60">60</button>
+            <button type="button" data-concurrency="70">70</button>
+            <button type="button" data-concurrency="80">80</button>
+          </div>
+        </section>
+
+        <section class="operation-panel" id="operationPanel" aria-labelledby="operationHeading" hidden>
+          <div class="section-heading">
+            <div>
+              <h2 id="operationHeading">Progreso de mantenimiento</h2>
+              <p id="operationDescription">Operación en curso</p>
+            </div>
+            <span class="operation-id" id="operationIdLabel"></span>
+          </div>
+          <ol class="progress-list" id="progressList"></ol>
+        </section>
+
+        <section class="history-section" aria-labelledby="historyHeading">
+          <div class="section-heading">
+            <div>
+              <h2 id="historyHeading">Operaciones recientes</h2>
+              <p>Las últimas 20 operaciones desde que inició este contenedor.</p>
+            </div>
+          </div>
+          <div class="history-wrap">
+            <table>
+              <thead>
+                <tr><th scope="col">Hora</th><th scope="col">Acción</th><th scope="col">Resultado</th><th scope="col">Detalle</th></tr>
+              </thead>
+              <tbody id="historyBody">
+                <tr><td colspan="4" class="empty-row">No hay operaciones administrativas en esta sesión.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="confirm-dialog" id="confirmDialog" aria-labelledby="dialogTitle">
+      <form method="dialog" class="dialog-content">
+        <div class="dialog-title-row">
+          <h2 id="dialogTitle">Confirmar operación</h2>
+          <button class="dialog-close" id="dialogClose" type="button" aria-label="Cerrar diálogo de confirmación">Cerrar</button>
+        </div>
+        <div class="dialog-body" id="dialogBody"></div>
+        <div class="dialog-actions">
+          <button class="button button-secondary" id="dialogCancel" type="button">Cancelar</button>
+          <button class="button button-danger" id="dialogConfirm" type="button">Confirmar</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

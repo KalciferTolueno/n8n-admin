@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-30T11:18:17Z",
+  "title": "Design System: n8n Admin",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Negro de sala", "canonical": "#0e1216", "tonalRamp": ["oklch(15% 0.012 240)", "oklch(26% 0.012 240)", "oklch(37% 0.012 240)", "oklch(48% 0.012 240)", "oklch(59% 0.012 240)", "oklch(70% 0.012 240)", "oklch(81% 0.012 240)", "oklch(92% 0.012 240)"] },
+      "surface": { "role": "neutral", "displayName": "Grafito de panel", "canonical": "#141b21", "tonalRamp": ["oklch(15% 0.015 240)", "oklch(26% 0.015 240)", "oklch(37% 0.015 240)", "oklch(48% 0.015 240)", "oklch(59% 0.015 240)", "oklch(70% 0.015 240)", "oklch(81% 0.015 240)", "oklch(92% 0.015 240)"] },
+      "surface-raised": { "role": "neutral", "displayName": "Grafito elevado", "canonical": "#1a232b", "tonalRamp": ["oklch(15% 0.018 240)", "oklch(26% 0.018 240)", "oklch(37% 0.018 240)", "oklch(48% 0.018 240)", "oklch(59% 0.018 240)", "oklch(70% 0.018 240)", "oklch(81% 0.018 240)", "oklch(92% 0.018 240)"] },
+      "rule": { "role": "neutral", "displayName": "Regla de registro", "canonical": "#2b3742", "tonalRamp": ["oklch(15% 0.022 240)", "oklch(26% 0.022 240)", "oklch(37% 0.022 240)", "oklch(48% 0.022 240)", "oklch(59% 0.022 240)", "oklch(70% 0.022 240)", "oklch(81% 0.022 240)", "oklch(92% 0.022 240)"] },
+      "rule-strong": { "role": "neutral", "displayName": "Regla de control", "canonical": "#44515c", "tonalRamp": ["oklch(15% 0.025 240)", "oklch(26% 0.025 240)", "oklch(37% 0.025 240)", "oklch(48% 0.025 240)", "oklch(59% 0.025 240)", "oklch(70% 0.025 240)", "oklch(81% 0.025 240)", "oklch(92% 0.025 240)"] },
+      "text": { "role": "neutral", "displayName": "Blanco frío", "canonical": "#f2f6f7", "tonalRamp": ["oklch(15% 0.01 210)", "oklch(26% 0.01 210)", "oklch(37% 0.01 210)", "oklch(48% 0.01 210)", "oklch(59% 0.01 210)", "oklch(70% 0.01 210)", "oklch(81% 0.01 210)", "oklch(92% 0.01 210)"] },
+      "muted": { "role": "neutral", "displayName": "Gris de lectura", "canonical": "#a8b4bb", "tonalRamp": ["oklch(15% 0.018 210)", "oklch(26% 0.018 210)", "oklch(37% 0.018 210)", "oklch(48% 0.018 210)", "oklch(59% 0.018 210)", "oklch(70% 0.018 210)", "oklch(81% 0.018 210)", "oklch(92% 0.018 210)"] },
+      "dim": { "role": "neutral", "displayName": "Gris técnico", "canonical": "#77848d", "tonalRamp": ["oklch(15% 0.018 230)", "oklch(26% 0.018 230)", "oklch(37% 0.018 230)", "oklch(48% 0.018 230)", "oklch(59% 0.018 230)", "oklch(70% 0.018 230)", "oklch(81% 0.018 230)", "oklch(92% 0.018 230)"] },
+      "signal-amber": { "role": "primary", "displayName": "Ámbar de señal", "canonical": "#f5b942", "tonalRamp": ["oklch(15% 0.14 85)", "oklch(26% 0.14 85)", "oklch(37% 0.14 85)", "oklch(48% 0.14 85)", "oklch(59% 0.14 85)", "oklch(70% 0.14 85)", "oklch(81% 0.14 85)", "oklch(92% 0.14 85)"] },
+      "signal-amber-ink": { "role": "primary", "displayName": "Tinta de ámbar", "canonical": "#1f1807", "tonalRamp": ["oklch(15% 0.05 85)", "oklch(26% 0.05 85)", "oklch(37% 0.05 85)", "oklch(48% 0.05 85)", "oklch(59% 0.05 85)", "oklch(70% 0.05 85)", "oklch(81% 0.05 85)", "oklch(92% 0.05 85)"] },
+      "status-online": { "role": "secondary", "displayName": "Verde de servicio", "canonical": "#5ce6a6", "tonalRamp": ["oklch(15% 0.14 155)", "oklch(26% 0.14 155)", "oklch(37% 0.14 155)", "oklch(48% 0.14 155)", "oklch(59% 0.14 155)", "oklch(70% 0.14 155)", "oklch(81% 0.14 155)", "oklch(92% 0.14 155)"] },
+      "status-error": { "role": "secondary", "displayName": "Rojo de riesgo", "canonical": "#ff7076", "tonalRamp": ["oklch(15% 0.18 20)", "oklch(26% 0.18 20)", "oklch(37% 0.18 20)", "oklch(48% 0.18 20)", "oklch(59% 0.18 20)", "oklch(70% 0.18 20)", "oklch(81% 0.18 20)", "oklch(92% 0.18 20)"] },
+      "status-transition": { "role": "secondary", "displayName": "Amarillo de transición", "canonical": "#f4cf62", "tonalRamp": ["oklch(15% 0.12 95)", "oklch(26% 0.12 95)", "oklch(37% 0.12 95)", "oklch(48% 0.12 95)", "oklch(59% 0.12 95)", "oklch(70% 0.12 95)", "oklch(81% 0.12 95)", "oklch(92% 0.12 95)"] },
+      "info": { "role": "secondary", "displayName": "Azul informativo", "canonical": "#8fb7ff", "tonalRamp": ["oklch(15% 0.1 260)", "oklch(26% 0.1 260)", "oklch(37% 0.1 260)", "oklch(48% 0.1 260)", "oklch(59% 0.1 260)", "oklch(70% 0.1 260)", "oklch(81% 0.1 260)", "oklch(92% 0.1 260)"] },
+      "focus": { "role": "secondary", "displayName": "Tinta de foco", "canonical": "#d9efff", "tonalRamp": ["oklch(15% 0.025 230)", "oklch(26% 0.025 230)", "oklch(37% 0.025 230)", "oklch(48% 0.025 230)", "oklch(59% 0.025 230)", "oklch(70% 0.025 230)", "oklch(81% 0.025 230)", "oklch(92% 0.025 230)"] }
+    },
+    "typographyMeta": {
+      "wordmark": { "displayName": "Marca", "purpose": "Identifica la única superficie de administración sin convertirse en una cabecera de marketing." },
+      "title": { "displayName": "Título de registro", "purpose": "Encabeza secciones y rótulos de control." },
+      "body": { "displayName": "Lectura operacional", "purpose": "Explica disponibilidad, consecuencias y detalle de la operación." },
+      "label": { "displayName": "Etiqueta técnica", "purpose": "Ordena estados, columnas y nombres de métricas para un escaneo rápido." },
+      "metric": { "displayName": "Métrica de cola", "purpose": "Da prioridad visual a los valores NEW y RUNNING." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "control-feedback", "value": "background 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out", "purpose": "Respuesta breve de hover y selección en botones y opciones." },
+      { "name": "active-stage-spin", "value": "spin 760ms linear infinite", "purpose": "Indica una sola etapa de mantenimiento activa." }
+    ],
+    "breakpoints": [
+      { "name": "ledger-stack", "value": "760px" },
+      { "name": "action-stack", "value": "430px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acción operativa reversible o neutra, como actualizar, iniciar, detener o cancelar.",
+      "html": "<button class=\"ds-button-secondary\" type=\"button\">Actualizar</button>",
+      "css": ".ds-button-secondary { min-height: 40px; padding: 9px 14px; border: 1px solid var(--rule-strong); border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; font: 690 0.9rem ui-sans-serif, system-ui, sans-serif; transition: background 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out; } .ds-button-secondary:hover:not(:disabled) { border-color: var(--rule-strong); background: var(--surface-raised); } .ds-button-secondary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; } .ds-button-secondary:disabled { cursor: not-allowed; opacity: 0.48; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Acción destructiva y confirmación final; sólo para la cola y consecuencias explícitas.",
+      "html": "<button class=\"ds-button-danger\" type=\"button\">Limpiar cola n8n</button>",
+      "css": ".ds-button-danger { min-height: 40px; padding: 9px 14px; border: 1px solid transparent; border-radius: 8px; background: var(--red); color: #2b080b; cursor: pointer; font: 690 0.9rem ui-sans-serif, system-ui, sans-serif; transition: background 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out; } .ds-button-danger:hover:not(:disabled) { border-color: var(--rule-strong); background: #ff898e; } .ds-button-danger:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; } .ds-button-danger:disabled { cursor: not-allowed; opacity: 0.48; }"
+    },
+    {
+      "name": "Concurrency Option",
+      "kind": "chip",
+      "refersTo": "concurrency-option",
+      "description": "Selector numérico compacto con una única opción activa y numerales de ancho tabular.",
+      "html": "<div class=\"ds-concurrency-list\"><button class=\"ds-concurrency-option\" type=\"button\">20</button><button class=\"ds-concurrency-option\" type=\"button\" aria-pressed=\"true\">40</button><button class=\"ds-concurrency-option\" type=\"button\">60</button></div>",
+      "css": ".ds-concurrency-list { display: flex; flex-wrap: wrap; gap: 8px; } .ds-concurrency-option { min-width: 54px; min-height: 40px; padding: 9px 14px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); color: var(--text); cursor: pointer; font: 690 0.9rem ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums; transition: background 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out; } .ds-concurrency-option:hover:not(:disabled) { border-color: var(--rule-strong); } .ds-concurrency-option[aria-pressed=\"true\"] { border-color: var(--amber); background: var(--amber); color: var(--amber-ink); } .ds-concurrency-option:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; } .ds-concurrency-option:disabled { cursor: not-allowed; opacity: 0.48; }"
+    },
+    {
+      "name": "Service Ledger Row",
+      "kind": "card",
+      "refersTo": "service-ledger-row",
+      "description": "Fila de servicio que une una marca geométrica, un estado textual y valores de infraestructura.",
+      "html": "<article class=\"ds-service-row\" data-status=\"running\"><span class=\"ds-status-mark\" aria-hidden=\"true\"></span><div class=\"ds-service-name\"><strong>n8n</strong><span>ONLINE</span></div><dl class=\"ds-service-values\"><div><dt>Réplicas</dt><dd>1/1</dd></div><div><dt>Concurrencia</dt><dd>40</dd></div></dl></article>",
+      "css": ".ds-service-row { display: grid; grid-template-columns: 12px minmax(130px, 1fr) auto; align-items: center; gap: 12px; min-height: 76px; padding: 12px 18px; border-top: 1px solid var(--rule); color: var(--text); font-family: ui-sans-serif, system-ui, sans-serif; } .ds-status-mark { width: 9px; height: 9px; background: var(--dim); transform: rotate(45deg); } .ds-service-row[data-status=\"running\"] .ds-status-mark, .ds-service-row[data-status=\"connected\"] .ds-status-mark { background: var(--green); } .ds-service-row[data-status=\"stopped\"] .ds-status-mark, .ds-service-row[data-status=\"error\"] .ds-status-mark { background: var(--red); } .ds-service-row[data-status=\"transitioning\"] .ds-status-mark, .ds-service-row[data-status=\"unknown\"] .ds-status-mark { background: var(--yellow); } .ds-service-name { display: grid; gap: 1px; } .ds-service-name strong { font-size: 1rem; } .ds-service-name span { color: var(--muted); font-size: 0.73rem; font-weight: 740; letter-spacing: 0.07em; } .ds-service-values { display: flex; gap: 24px; margin: 0; text-align: right; } .ds-service-values div { display: grid; gap: 2px; } .ds-service-values dt { color: var(--dim); font-size: 0.7rem; letter-spacing: 0.06em; } .ds-service-values dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Operation Progress",
+      "kind": "custom",
+      "refersTo": "operation-progress",
+      "description": "Lista de etapas que diferencia espera, trabajo activo, éxito y error sin depender sólo del color.",
+      "html": "<ol class=\"ds-progress-list\"><li data-state=\"success\"><span class=\"ds-step-mark\"></span><span>Detener servicio</span><small>Confirmado</small></li><li data-state=\"active\"><span class=\"ds-step-mark\"></span><span>Limpiar cola</span><small>En curso</small></li></ol>",
+      "css": ".ds-progress-list { display: grid; margin: 0; padding: 0; color: var(--text); font: 0.9rem ui-sans-serif, system-ui, sans-serif; list-style: none; } .ds-progress-list li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 42px; border-top: 1px solid var(--rule); } .ds-step-mark { width: 11px; height: 11px; border: 1px solid var(--rule-strong); border-radius: 50%; } .ds-progress-list li[data-state=\"active\"] .ds-step-mark { border-color: var(--amber); border-top-color: transparent; animation: ds-spin 760ms linear infinite; } .ds-progress-list li[data-state=\"success\"] .ds-step-mark { border-color: var(--green); border-radius: 0; background: var(--green); transform: rotate(45deg) scale(0.72); } .ds-progress-list li[data-state=\"error\"] .ds-step-mark { border-color: var(--red); background: var(--red); } .ds-progress-list small { color: var(--muted); font-size: 0.78rem; text-align: right; } @keyframes ds-spin { to { transform: rotate(360deg); } }"
+    },
+    {
+      "name": "Confirmation Dialog",
+      "kind": "custom",
+      "refersTo": "confirmation-dialog",
+      "description": "Contenedor protegido para presentar consecuencias, advertencia y acciones finales antes de mantenimiento riesgoso.",
+      "html": "<section class=\"ds-confirmation\"><div class=\"ds-confirmation-title\"><strong>Confirmar operación</strong><button type=\"button\">Cerrar</button></div><p>La operación afectará al servicio seleccionado.</p><div class=\"ds-impact\">Se detendrá n8n antes de limpiar la cola.</div><div class=\"ds-confirmation-actions\"><button class=\"ds-cancel\" type=\"button\">Cancelar</button><button class=\"ds-confirm\" type=\"button\">Confirmar</button></div></section>",
+      "css": ".ds-confirmation { width: min(520px, calc(100% - 28px)); padding: 21px; border: 1px solid var(--rule-strong); border-radius: 14px; background: var(--surface-raised); color: var(--text); font: 0.9rem ui-sans-serif, system-ui, sans-serif; } .ds-confirmation-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; } .ds-confirmation-title strong { font-size: 1.18rem; letter-spacing: -0.025em; } .ds-confirmation-title button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font: 0.8rem ui-sans-serif, system-ui, sans-serif; text-decoration: underline; text-underline-offset: 3px; } .ds-confirmation p { margin: 18px 0 0; color: var(--muted); } .ds-impact { margin-top: 12px; padding: 12px; border: 1px solid #804249; background: #251619; color: var(--text); font-variant-numeric: tabular-nums; } .ds-confirmation-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; } .ds-cancel, .ds-confirm { min-height: 40px; padding: 9px 14px; border-radius: 8px; cursor: pointer; font: 690 0.9rem ui-sans-serif, system-ui, sans-serif; } .ds-cancel { border: 1px solid var(--rule-strong); background: transparent; color: var(--text); } .ds-confirm { border: 1px solid transparent; background: var(--red); color: #2b080b; } .ds-cancel:hover { background: var(--surface-raised); } .ds-confirm:hover { background: #ff898e; } .ds-cancel:focus-visible, .ds-confirm:focus-visible, .ds-confirmation-title button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }"
+    },
+    {
+      "name": "Operation History Table",
+      "kind": "custom",
+      "refersTo": "operation-history",
+      "description": "Registro tabular de acciones recientes, con resultado textual y color semántico.",
+      "html": "<div class=\"ds-history-wrap\"><table class=\"ds-history\"><thead><tr><th>Hora</th><th>Acción</th><th>Resultado</th><th>Detalle</th></tr></thead><tbody><tr><td>07:16:53</td><td>Actualizar</td><td data-result=\"OK\">OK</td><td>Estado leído correctamente.</td></tr></tbody></table></div>",
+      "css": ".ds-history-wrap { overflow-x: auto; border-top: 1px solid var(--rule); font-family: ui-sans-serif, system-ui, sans-serif; } .ds-history { width: 100%; min-width: 620px; border-collapse: collapse; } .ds-history th, .ds-history td { padding: 11px 10px; border-bottom: 1px solid var(--rule); text-align: left; font-size: 0.82rem; } .ds-history th { color: var(--dim); font-size: 0.7rem; font-weight: 760; letter-spacing: 0.08em; } .ds-history td { color: var(--muted); } .ds-history td:first-child, .ds-history td:nth-child(3) { white-space: nowrap; font-variant-numeric: tabular-nums; } .ds-history td:nth-child(2) { color: var(--text); font-weight: 650; } .ds-history td[data-result=\"OK\"] { color: var(--green); font-weight: 750; } .ds-history td[data-result=\"ERROR\"] { color: var(--red); font-weight: 750; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El libro mayor de incidentes",
+    "overview": "n8n Admin se comporta como una hoja de control de una sala de operaciones: oscura, precisa y serena bajo presión. La información viva llega primero; las acciones de mantenimiento aparecen como decisiones explícitas y con consecuencias legibles. La interfaz debe sentirse compacta y profesional, sin transformar la observación de un servicio único en una consola genérica o una cuadrícula de tarjetas decorativas.\n\nLa profundidad procede de superficies grafito y líneas de registro, no de sombra, brillo ni imágenes. El ámbar concentra la atención en actividad, selección y lectura vigente; los estados de servicio conservan sus propios colores semánticos y siempre se acompañan de texto. Las acciones no disponibles se muestran con una atenuación clara: los controles de iniciar y detener quedan deshabilitados hasta que Docker entrega un estado válido y también ante error; limpiar la cola depende de una base de datos conectada.",
+    "keyCharacteristics": [
+      "Densidad de libro mayor: filas, divisores y valores alineados para escanear, no para decorar.",
+      "Una única nota de señal cálida para el estado actual, la selección y el acento del nombre.",
+      "Estados operacionales expresados con palabra, marca geométrica y color.",
+      "Riesgo visible: la única acción destructiva se diferencia antes de abrir una confirmación modal.",
+      "Tipografía de sistema compacta y numerales tabulares para que las cifras no salten al actualizarse."
+    ],
+    "rules": [
+      { "name": "The Reserved Signal Rule", "body": "El ámbar señala lo actual o seleccionado; no se usa como relleno general, como segundo color de estado ni para embellecer bloques neutrales.", "section": "colors" },
+      { "name": "The Tabular Evidence Rule", "body": "Todo valor que pueda actualizarse, compararse o registrarse en una tabla conserva numerales tabulares; no sustituirlos por cifras de ancho proporcional.", "section": "typography" },
+      { "name": "The Ledger Continuity Rule", "body": "Las secciones comparten el mismo eje y el mismo lenguaje de reglas; no encerrar cada bloque en una tarjeta independiente ni crear columnas auxiliares que interrumpan la lectura de arriba abajo.", "section": "layout" },
+      { "name": "The Flat-by-Record Rule", "body": "Una superficie cambia de plano sólo cuando contiene otra clase de información o una decisión protegida; no añadir sombras, degradados ni elevación de hover para simular importancia.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do conservar una única columna de lectura en móvil y el ledger de dos columnas sólo cuando exista espacio para comparar servicios y cola.",
+      "Do usar texto y la marca geométrica junto al color para todo estado vivo.",
+      "Do reservar la señal ámbar para selección, actualidad y el detalle cálido de la marca.",
+      "Do mantener la acción de limpiar cola separada visualmente y confirmar sus consecuencias dentro del diálogo protegido.",
+      "Do mostrar controles indisponibles como estados atenuados y mantener el foco de teclado claramente visible."
+    ],
+    "donts": [
+      "Don't convertir esta superficie en una cuadrícula de tarjetas de dashboard genérica.",
+      "Don't usar sombras, degradados, ilustraciones ni activos raster como sustitutos de la jerarquía operacional.",
+      "Don't depender únicamente del color para comunicar error, conexión, transición o éxito.",
+      "Don't dar al rojo de riesgo el mismo tratamiento que una acción de mantenimiento ordinaria.",
+      "Don't ocultar la tabla de historial ni comprimir sus columnas hasta perder su valor de auditoría."
+    ]
+  }
+}
