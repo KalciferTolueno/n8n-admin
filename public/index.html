@@ -10,11 +10,11 @@
   </head>
   <body>
     <!--
-      THESIS: An incident-ready maintenance ledger that makes the live n8n service state and the exact consequences of control actions impossible to miss; it rejects the generic dashboard card grid.
-      OWN-WORLD: Near-black control-room surface, crisp graphite rules, one signal amber for active work, and explicit green/red/yellow service states with dense tabular numerals.
+      THESIS: An incident-ready operations desk with clearly separated cards: read the service state first, then take one protected maintenance action, and retain an audit trail.
+      OWN-WORLD: Near-black control-room surface, graphite cards with crisp rules, one signal amber for active work, and explicit green/red/yellow service states with dense tabular numerals.
       STORY: An internal operator sees service health, queue pressure, and concurrency, then takes one deliberate protected action with live stage feedback.
-      FIRST VIEWPORT: A compact masthead feeds a two-column service and queue board; the main maintenance rail sits directly below, with the destructive queue action visibly isolated.
-      FORM: Operations ledger / control room instrument panel, position 7 of the grounded direction list; seed key d182c212.
+      FIRST VIEWPORT: A compact masthead leads into a primary system card. A large maintenance card and a smaller concurrency card form the action deck below.
+      FORM: Operations desk / high-signal card layout, using cards only to separate meaningful operational domains.
       FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
     -->
     <div class="app-shell">
@@ -32,7 +32,8 @@
       <main>
         <div class="flash" id="flash" role="status" aria-live="polite" hidden></div>
 
-        <section class="system-board" aria-labelledby="systemHeading">
+        <div class="dashboard-grid">
+        <section class="panel system-card" aria-labelledby="systemHeading">
           <div class="section-heading">
             <h1 id="systemHeading">Estado actual del sistema</h1>
             <span class="status-copy" id="overallStatus">VERIFICANDO</span>
@@ -79,7 +80,7 @@
           </div>
         </section>
 
-        <section class="control-deck" aria-labelledby="controlsHeading">
+        <section class="panel action-card" aria-labelledby="controlsHeading">
           <div class="section-heading">
             <h2 id="controlsHeading">Controles de mantenimiento</h2>
             <p>Solo puede ejecutarse una operación administrativa a la vez.</p>
@@ -89,9 +90,20 @@
             <button class="button button-secondary" id="startButton" type="button">Iniciar n8n</button>
             <button class="button button-danger" id="cleanButton" type="button">Limpiar cola n8n</button>
           </div>
+
+          <section class="operation-panel" id="operationPanel" aria-labelledby="operationHeading" hidden>
+            <div class="section-heading">
+              <div>
+                <h2 id="operationHeading">Progreso de mantenimiento</h2>
+                <p id="operationDescription">Operación en curso</p>
+              </div>
+              <span class="operation-id" id="operationIdLabel"></span>
+            </div>
+            <ol class="progress-list" id="progressList"></ol>
+          </section>
         </section>
 
-        <section class="concurrency-section" aria-labelledby="concurrencyHeading">
+        <section class="panel concurrency-card" aria-labelledby="concurrencyHeading">
           <div class="section-heading">
             <div>
               <h2 id="concurrencyHeading">Concurrencia</h2>
@@ -110,18 +122,7 @@
           </div>
         </section>
 
-        <section class="operation-panel" id="operationPanel" aria-labelledby="operationHeading" hidden>
-          <div class="section-heading">
-            <div>
-              <h2 id="operationHeading">Progreso de mantenimiento</h2>
-              <p id="operationDescription">Operación en curso</p>
-            </div>
-            <span class="operation-id" id="operationIdLabel"></span>
-          </div>
-          <ol class="progress-list" id="progressList"></ol>
-        </section>
-
-        <section class="history-section" aria-labelledby="historyHeading">
+        <section class="panel history-card" aria-labelledby="historyHeading">
           <div class="section-heading">
             <div>
               <h2 id="historyHeading">Operaciones recientes</h2>
@@ -139,6 +140,7 @@
             </table>
           </div>
         </section>
+        </div>
       </main>
     </div>
 

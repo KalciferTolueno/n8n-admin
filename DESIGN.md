@@ -1,17 +1,18 @@
 ---
 name: "n8n Admin"
-description: "Panel interno de operaciones para mantener un servicio n8n con estados y acciones deliberadas."
+description: "Panel interno de operaciones para mantener un servicio n8n mediante estados claros y acciones deliberadas."
 colors:
-  ground: "#0e1216"
-  surface: "#141b21"
-  surface-raised: "#1a232b"
-  rule: "#2b3742"
-  rule-strong: "#44515c"
-  text: "#f2f6f7"
-  muted: "#a8b4bb"
-  dim: "#77848d"
+  ground: "#0b0f13"
+  surface: "#121a20"
+  surface-raised: "#182129"
+  surface-muted: "#0f171d"
+  rule: "#2a3640"
+  rule-strong: "#4a5a66"
+  text: "#f4f7f8"
+  muted: "#a9b6be"
+  dim: "#7c8b95"
   signal-amber: "#f5b942"
-  signal-amber-ink: "#1f1807"
+  signal-amber-ink: "#211804"
   status-online: "#5ce6a6"
   status-error: "#ff7076"
   status-transition: "#f4cf62"
@@ -20,14 +21,14 @@ colors:
 typography:
   wordmark:
     fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    fontSize: "clamp(1.45rem, 2vw, 1.82rem)"
-    fontWeight: 760
+    fontSize: "clamp(1.5rem, 2.2vw, 1.95rem)"
+    fontWeight: 780
     letterSpacing: "-0.04em"
   title:
     fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 720
-    letterSpacing: "-0.015em"
+    fontSize: "1.02rem"
+    fontWeight: 740
+    letterSpacing: "-0.018em"
   body:
     fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
     fontSize: "16px"
@@ -39,50 +40,71 @@ typography:
     letterSpacing: "0.08em"
   metric:
     fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    fontSize: "clamp(2.1rem, 5vw, 3.8rem)"
-    lineHeight: 1
-    letterSpacing: "-0.055em"
+    fontSize: "clamp(2.25rem, 5vw, 4rem)"
+    lineHeight: 0.95
+    letterSpacing: "-0.04em"
 rounded:
-  control: "8px"
-  dialog: "14px"
+  card: "16px"
+  control: "10px"
 spacing:
-  shell-top: "34px"
-  shell-bottom: "56px"
-  section: "26px"
-  ledger-inset: "18px"
+  shell-top: "36px"
+  shell-bottom: "60px"
+  card-gap: "18px"
+  card-inset: "24px"
+  compact-card-inset: "18px"
   control-gap: "10px"
-  dialog-inset: "21px"
+  dialog-inset: "22px"
 components:
+  system-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.card}"
+    padding: "22px 24px 0"
+    width: "100%"
+  maintenance-card:
+    backgroundColor: "{colors.surface-raised}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.card}"
+    padding: "{spacing.card-inset}"
+  concurrency-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.card}"
+    padding: "{spacing.card-inset}"
+  history-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.card}"
+    padding: "24px 24px 0"
+    width: "100%"
   button-secondary:
-    backgroundColor: "transparent"
+    backgroundColor: "{colors.surface-muted}"
     textColor: "{colors.text}"
     rounded: "{rounded.control}"
-    padding: "9px 14px"
-    height: "40px"
+    padding: "10px 14px"
+    height: "44px"
   button-danger:
     backgroundColor: "{colors.status-error}"
     textColor: "#2b080b"
     rounded: "{rounded.control}"
-    padding: "9px 14px"
-    height: "40px"
+    padding: "10px 14px"
+    height: "44px"
   concurrency-option:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.surface-muted}"
     textColor: "{colors.text}"
     rounded: "{rounded.control}"
-    padding: "9px 14px"
-    height: "40px"
-    width: "54px"
+    padding: "10px 14px"
+    height: "44px"
   concurrency-option-active:
     backgroundColor: "{colors.signal-amber}"
     textColor: "{colors.signal-amber-ink}"
     rounded: "{rounded.control}"
-    padding: "9px 14px"
-    height: "40px"
-    width: "54px"
+    padding: "10px 14px"
+    height: "44px"
   confirmation-dialog:
     backgroundColor: "{colors.surface-raised}"
     textColor: "{colors.text}"
-    rounded: "{rounded.dialog}"
+    rounded: "{rounded.card}"
     padding: "{spacing.dialog-inset}"
     width: "min(520px, calc(100% - 28px))"
 ---
@@ -93,26 +115,26 @@ components:
 
 **Creative North Star: "El libro mayor de incidentes"**
 
-n8n Admin se comporta como una hoja de control de una sala de operaciones: oscura, precisa y serena bajo presión. La información viva llega primero; las acciones de mantenimiento aparecen como decisiones explícitas y con consecuencias legibles. La interfaz debe sentirse compacta y profesional, sin transformar la observación de un servicio único en una consola genérica o una cuadrícula de tarjetas decorativas.
+n8n Admin es una superficie de control para incidentes: oscura, precisa y serena bajo presión. La información viva llega primero y las acciones de mantenimiento se presentan como decisiones explícitas, con consecuencias legibles. La jerarquía agrupa cada capacidad operacional en una tarjeta sobria y útil, no como una colección intercambiable de métricas decorativas.
 
-La profundidad procede de superficies grafito y líneas de registro, no de sombra, brillo ni imágenes. El ámbar concentra la atención en actividad, selección y lectura vigente; los estados de servicio conservan sus propios colores semánticos y siempre se acompañan de texto. Las acciones no disponibles se muestran con una atenuación clara: los controles de iniciar y detener quedan deshabilitados hasta que Docker entrega un estado válido y también ante error; limpiar la cola depende de una base de datos conectada.
+La composición comienza con una tarjeta de estado a todo ancho. Debajo, la tarjeta amplia de mantenimiento y la tarjeta de concurrencia forman una pareja de trabajo; el progreso aparece dentro de mantenimiento porque sólo cobra sentido como parte de la operación activa. Una tarjeta de historial de ancho completo cierra el registro. La profundidad procede de grafitos, bordes y radios contenidos, no de sombras, brillo ni imágenes. El ámbar concentra la atención en actividad, selección y lectura vigente; los estados de servicio conservan colores semánticos y siempre se acompañan de texto.
 
 **Key Characteristics:**
 
-- Densidad de libro mayor: filas, divisores y valores alineados para escanear, no para decorar.
-- Una única nota de señal cálida para el estado actual, la selección y el acento del nombre.
-- Estados operacionales expresados con palabra, marca geométrica y color.
-- Riesgo visible: la única acción destructiva se diferencia antes de abrir una confirmación modal.
-- Tipografía de sistema compacta y numerales tabulares para que las cifras no salten al actualizarse.
+- Tarjetas operativas con una responsabilidad concreta, dispuestas en una jerarquía de control y no en una grilla genérica.
+- Tarjeta de estado a todo ancho que une servicios y cola como una única lectura de salud.
+- Tarjeta de mantenimiento dominante que contiene acciones y, cuando corresponde, el progreso de la misma operación.
+- Tarjeta de concurrencia secundaria, compacta y claramente separada de las acciones de riesgo.
+- Numerales tabulares, reglas finas y una señal ámbar reservada para actualizar estados sin ruido visual.
 
 ## Colors
 
-La paleta es una escala de grafito frío atravesada por una señal ámbar reservada y colores de estado que sólo comunican condiciones operacionales.
+La paleta es una escala de grafito frío con tres niveles de superficie; el ámbar sólo marca actualidad o selección y los colores de estado sólo comunican condiciones operacionales.
 
 ### Primary
 
-- **Ámbar de señal**: destaca el estado global, la selección de concurrencia, la lectura vigente y el sufijo de la marca.
-- **Tinta de ámbar**: se usa únicamente sobre el ámbar para conservar el contraste de las selecciones y la selección de texto.
+- **Ámbar de señal**: destaca el estado global, la concurrencia seleccionada, la lectura vigente y el sufijo de la marca.
+- **Tinta de ámbar**: se usa únicamente sobre el ámbar para sostener contraste en la selección y en la selección de texto.
 
 ### Secondary
 
@@ -124,12 +146,12 @@ La paleta es una escala de grafito frío atravesada por una señal ámbar reserv
 ### Neutral
 
 - **Negro de sala**: fondo continuo del lienzo y del riel de desplazamiento.
-- **Grafito de panel y grafito elevado**: separan la banca de cola, el progreso y la confirmación del fondo sin elevarlos con sombras.
-- **Reglas de grafito**: organizan la lectura con divisores finos y su variante fuerte perfila controles y avisos.
-- **Blanco frío, gris de lectura y gris tenue**: sostienen la jerarquía entre contenido principal, ayuda y etiquetas técnicas.
-- **Tinta de foco**: es el único tratamiento de foco de teclado; debe mantenerse inequívoco sobre el fondo oscuro.
+- **Grafito de tarjeta, elevado y apagado**: distinguen las tarjetas, la tarjeta de mantenimiento y los controles secundarios sin recurrir a sombra.
+- **Reglas de grafito**: ordenan contenido dentro de cada tarjeta y su variante fuerte perfila controles y avisos.
+- **Blanco frío, gris de lectura y gris técnico**: sostienen la jerarquía entre contenido principal, ayuda y etiquetas técnicas.
+- **Tinta de foco**: es el único tratamiento de foco de teclado y debe permanecer inequívoco sobre el fondo oscuro.
 
-**The Reserved Signal Rule.** El ámbar señala lo actual o seleccionado; no se usa como relleno general, como segundo color de estado ni para embellecer bloques neutrales.
+**The Reserved Signal Rule.** El ámbar señala lo actual o seleccionado; no se usa como relleno general, como segundo color de estado ni para adornar tarjetas neutrales.
 
 ## Typography
 
@@ -137,35 +159,35 @@ La paleta es una escala de grafito frío atravesada por una señal ámbar reserv
 
 **Body Font:** la misma pila de sistema definida en `typography.body`.
 
-**Character:** La voz es funcional y cercana al sistema operativo: firme para títulos, apretada para etiquetas técnicas y sin una fuente de exhibición ajena al trabajo operativo. Los datos de servicio, cola, identificadores y resultados emplean numerales tabulares para que los cambios en vivo se lean como instrumentos estables.
+**Character:** La voz es funcional y cercana al sistema operativo: firme para títulos de tarjeta, apretada para etiquetas técnicas y sin una fuente de exhibición ajena al trabajo operativo. Los datos de servicio, cola, identificadores y resultados emplean numerales tabulares para que los cambios en vivo se lean como instrumentos estables.
 
 ### Hierarchy
 
-- **Wordmark:** identifica el control room con una compactación leve y deja que sólo “Admin” tome la señal cálida.
-- **Title:** resuelve encabezados de secciones como rótulos de un libro mayor, nunca como titulares de marketing.
+- **Wordmark:** identifica el control room con compactación leve y deja que sólo “Admin” tome la señal cálida.
+- **Title:** encabeza tarjetas y subprocesos como rótulos de un libro mayor, nunca como titulares de marketing.
 - **Body:** presenta instrucciones, explicaciones y detalles en la lectura más neutra de la superficie.
 - **Label:** aplica mayúsculas y espaciado a estados, columnas y nombres de métricas cuando conviene priorizar el escaneo.
-- **Metric:** hace que NEW, RUNNING y los conteos sean la lectura dominante dentro de la banca de cola.
+- **Metric:** hace que NEW y RUNNING sean la lectura dominante dentro de la tarjeta de estado.
 
 **The Tabular Evidence Rule.** Todo valor que pueda actualizarse, compararse o registrarse en una tabla conserva numerales tabulares; no sustituirlos por cifras de ancho proporcional.
 
 ## Layout
 
-El escritorio usa un único contenedor centrado, limitado a 1,180 px y respirado por un margen lateral de 40 px. La primera banda contiene una cabecera compacta; el estado actual abre en dos columnas desiguales: el libro de servicios ocupa la porción amplia y la cola queda como banco tonal contiguo. Los controles, la concurrencia, el progreso y el historial continúan como secciones de ancho completo separadas por reglas horizontales, con un ritmo vertical principal de 26 px.
+El escritorio usa un contenedor centrado limitado a 1,200 px, con una retícula de doce columnas y una separación de 18 px. La tarjeta de estado y la de historial abarcan toda la retícula. En la fila operativa, mantenimiento ocupa ocho columnas y concurrencia cuatro; a 920 px pasan a siete y cinco columnas, con acciones de mantenimiento en una sola columna. A 760 px toda la retícula se reduce a una columna; a 430 px se compactan los márgenes, las acciones de diálogo se apilan y los controles de concurrencia pasan a tres columnas.
 
-A 760 px la placa de estado pasa a una sola columna, los encabezados apilan sus metadatos y los valores de cada servicio dejan de competir por el extremo derecho. A 430 px, los grupos de acciones y confirmación se convierten en una columna de ancho completo. La tabla conserva su ancho mínimo y se desplaza horizontalmente dentro de su contenedor en vez de romper los encabezados de auditoría.
+La tarjeta de estado conserva internamente servicios y cola como dos áreas hasta el corte móvil, cuando se apilan. La tarjeta de historial mantiene la tabla en un contenedor con desplazamiento horizontal intencional. Las tarjetas no deben formar mosaicos de contenido heterogéneo: cada una agrupa una lectura o capacidad completa, y la tarjeta de mantenimiento contiene su progreso en vez de crear una tarjeta de progreso competidora.
 
-**The Ledger Continuity Rule.** Las secciones comparten el mismo eje y el mismo lenguaje de reglas; no encerrar cada bloque en una tarjeta independiente ni crear columnas auxiliares que interrumpan la lectura de arriba abajo.
+**The Operational Card Rule.** Una tarjeta debe corresponder a una unidad de decisión o evidencia: estado, mantenimiento, concurrencia o historial. No fragmentar esas unidades en minitarjetas ni repetir la misma métrica en tarjetas vecinas.
 
 ## Elevation & Depth
 
-El sistema es plano por defecto: no hay sombras. La profundidad se comunica mediante tres tonos de grafito, bordes de una línea y el fondo oscuro del diálogo modal. El banco de cola, el panel de operación y la confirmación se distinguen por tono y regla; la confirmación añade una cortina negra translúcida para aislar la decisión sin teatralidad.
+El sistema permanece plano: no hay sombras. Las tarjetas se separan por borde, radio y cambio tonal, con la tarjeta de mantenimiento un nivel más elevado que las tarjetas de estado, concurrencia e historial. Dentro de mantenimiento, el panel de progreso recupera la jerarquía con una regla superior en lugar de una tarjeta anidada. La confirmación aparece sobre una cortina oscura y mantiene el tono elevado de una decisión protegida.
 
-**The Flat-by-Record Rule.** Una superficie cambia de plano sólo cuando contiene otra clase de información o una decisión protegida; no añadir sombras, degradados ni elevación de hover para simular importancia.
+**The Flat-by-Record Rule.** Una tarjeta gana jerarquía por tono y borde cuando contiene otra clase de operación, nunca por sombras, degradados ni efectos de levitación.
 
 ## Shapes
 
-Los controles son rectángulos suavemente curvados mediante `rounded.control`, mientras que la confirmación usa `rounded.dialog` para establecer una contención mayor sin abandonar el lenguaje técnico. Las filas, bancos y tablas permanecen rectilíneos; los puntos de estado son pequeños rombos y las etapas exitosas recuperan ese gesto geométrico. Sólo el indicador de etapa pendiente usa un círculo, reservado para la idea de proceso.
+Las tarjetas y la confirmación usan `rounded.card`: una curva moderada que hace visible la agrupación sin suavizar en exceso el carácter técnico. Botones, opciones numéricas y avisos de impacto usan `rounded.control`. Las filas, tablas y rieles interiores permanecen rectilíneos. Los puntos de estado son pequeños rombos; el paso activo es circular y el éxito vuelve a adoptar el rombo, reservando cada geometría para una clase de señal.
 
 ## Components
 
@@ -173,50 +195,53 @@ Los controles son rectángulos suavemente curvados mediante `rounded.control`, m
 
 **Character:** controles compactos y auditablemente sobrios.
 
-- **Secondary:** contorno fuerte sobre fondo transparente para actualizar, iniciar, detener y cancelar; al pasar el cursor puede tomar la superficie elevada.
-- **Danger:** relleno rojo de riesgo para limpiar cola y confirmar acciones destructivas; mantiene una tinta oscura para sostener contraste y no se duplica para acciones neutras.
-- **Disabled:** reduce su opacidad y deja de ofrecer cursor de acción. Las condiciones de disponibilidad siguen siendo visibles a través del estado de servicio; no se reemplazan por un botón aparentemente activo.
+- **Secondary:** superficie apagada con contorno fuerte para actualizar, iniciar, detener y cancelar; al pasar el cursor puede tomar una superficie más clara.
+- **Danger:** relleno rojo de riesgo para limpiar cola y confirmar acciones destructivas; mantiene una tinta oscura y no se duplica para acciones neutras.
+- **Disabled:** reduce opacidad y deja de ofrecer cursor de acción. Las condiciones de disponibilidad siguen visibles a través del estado del servicio; no se reemplazan por un botón aparentemente activo.
 - **Focus:** todo botón y enlace usa el anillo de foco del sistema con separación exterior.
 
 ### Chips
 
 **Character:** selector numérico de concurrencia, no etiqueta decorativa.
 
-- **Default:** opción grafito con contorno de regla, ancho mínimo y numerales tabulares.
+- **Default:** opción grafito apagado con contorno de regla, numerales tabulares y distribución regular dentro de la tarjeta de concurrencia.
 - **Selected:** la opción con `aria-pressed="true"` cambia a la señal ámbar; es la única opción seleccionada.
-- **Disabled:** conserva su posición y valor, pero comunica que el estado actual no permite cambiar concurrencia.
+- **Responsive:** usa cuatro columnas en la tarjeta de concurrencia y tres en el tramo más estrecho, manteniendo áreas táctiles consistentes.
 
 ### Cards / Containers
 
-**Character:** bancos de lectura integrados al libro mayor.
+**Character:** contenedores operativos con responsabilidad inequívoca.
 
-- **Queue bank:** superficie de panel que agrupa NEW y RUNNING junto al ledger de servicios, separada por una regla vertical en escritorio y horizontal en móvil.
-- **Operation panel:** superficie de panel con borde completo para exponer pasos en curso; se muestra sólo mientras existe una operación.
-- **Confirmation dialog:** superficie elevada dentro de una cortina oscura, con advertencia y lista de impacto antes de la acción.
+- **System Status Card:** abarca el ancho completo y vincula el ledger de servicios con el banco de cola en una misma lectura de salud.
+- **Maintenance Card:** es la tarjeta dominante de la fila de trabajo; agrupa detener, iniciar y limpiar, y contiene el progreso cuando existe una operación.
+- **Concurrency Card:** acompaña mantenimiento como tarjeta más estrecha; presenta el valor vigente, su advertencia y las opciones de cambio sin mezclar acciones de riesgo.
+- **History Card:** abarca el ancho completo y retiene el registro en tabla dentro de la misma tarjeta.
+- **Progress Container:** vive dentro de Maintenance Card, separado por una regla superior; no crea una tarjeta paralela ni compite con la acción que explica.
+- **Confirmation Dialog:** superficie elevada dentro de una cortina oscura. Para limpiar la cola exige seleccionar `Solo NEW`, `Solo RUNNING` o ambas mediante opciones de radio con sus conteos actuales; la confirmación permanece deshabilitada hasta elegir un alcance.
 
 ### Navigation
 
-**Character:** una cabecera informativa mínima, no una barra de producto.
+**Character:** cabecera informativa mínima, no una barra de producto.
 
-- La marca vuelve al inicio, el estado de actualización y el botón de recarga ocupan el extremo opuesto en escritorio y se apilan con orden legible en móvil.
+- La marca vuelve al inicio; el estado de actualización y el botón de recarga ocupan el extremo opuesto en escritorio y se apilan con orden legible en móvil.
 
 ### Service Ledger
 
-**Character:** cada servicio se lee como una fila operacional completa.
+**Character:** filas de evidencia dentro de la tarjeta de estado.
 
 - La marca geométrica y el texto de estado forman la primera lectura; réplicas, concurrencia o disponibilidad forman la segunda.
 - Verde, rojo y amarillo se asignan desde el estado de datos y no sustituyen el nombre textual del estado.
 
 ### Operation Progress
 
-**Character:** una secuencia de comprobación, no una animación de carga genérica.
+**Character:** una secuencia de comprobación ligada a la tarjeta de mantenimiento, no una animación de carga genérica.
 
 - Las etapas pendientes usan un círculo de contorno; la activa gira con una única animación lineal y la concluida se convierte en rombo verde.
 - La descripción de la etapa queda junto a la marca; el detalle y el identificador se mantienen tabulares para facilitar la trazabilidad.
 
 ### History Table
 
-**Character:** registro compacto y de ancho honesto.
+**Character:** registro compacto y de ancho honesto dentro de History Card.
 
 - Los encabezados son etiquetas técnicas espaciadas; la acción conserva texto claro y el resultado vuelve a usar verde o rojo junto a su texto.
 - En pantallas estrechas, el contenedor se desplaza horizontalmente en lugar de eliminar columnas o abreviar el historial.
@@ -225,16 +250,17 @@ Los controles son rectángulos suavemente curvados mediante `rounded.control`, m
 
 ### Do:
 
-- **Do** conservar una única columna de lectura en móvil y el ledger de dos columnas sólo cuando exista espacio para comparar servicios y cola.
-- **Do** usar texto y la marca geométrica junto al color para todo estado vivo.
+- **Do** usar tarjetas para contener capacidades operativas completas, no para partir una sola operación en fragmentos visuales.
+- **Do** mantener la tarjeta de estado y la de historial a todo ancho, y hacer dominante la de mantenimiento en escritorio.
+- **Do** mantener el progreso dentro de la tarjeta de mantenimiento y la concurrencia en su propia tarjeta secundaria.
+- **Do** usar texto y marca geométrica junto al color para todo estado vivo.
 - **Do** reservar la señal ámbar para selección, actualidad y el detalle cálido de la marca.
 - **Do** mantener la acción de limpiar cola separada visualmente y confirmar sus consecuencias dentro del diálogo protegido.
-- **Do** mostrar controles indisponibles como estados atenuados y mantener el foco de teclado claramente visible.
 
 ### Don't:
 
-- **Don't** convertir esta superficie en una cuadrícula de tarjetas de dashboard genérica.
+- **Don't** convertir las tarjetas operativas en una grilla genérica de KPI, con bloques intercambiables o métricas duplicadas.
 - **Don't** usar sombras, degradados, ilustraciones ni activos raster como sustitutos de la jerarquía operacional.
 - **Don't** depender únicamente del color para comunicar error, conexión, transición o éxito.
-- **Don't** dar al rojo de riesgo el mismo tratamiento que una acción de mantenimiento ordinaria.
+- **Don't** crear una tarjeta de progreso independiente de la operación de mantenimiento que la produce.
 - **Don't** ocultar la tabla de historial ni comprimir sus columnas hasta perder su valor de auditoría.

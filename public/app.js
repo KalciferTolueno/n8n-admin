@@ -208,25 +208,72 @@ function addParagraph(text, className = '') {
   elements.dialogBody.append(paragraph);
 }
 
+function createCleanOption({ value, label, count }) {
+  const option = document.createElement('label');
+  option.className = 'clean-option';
+
+  const input = document.createElement('input');
+  input.type = 'radio';
+  input.name = 'clean-scope';
+  input.value = value;
+
+  const copy = document.createElement('span');
+  copy.className = 'clean-option-copy';
+  const title = document.createElement('strong');
+  title.textContent = label;
+  const detail = document.createElement('span');
+  detail.textContent = count;
+  copy.append(title, detail);
+  option.append(input, copy);
+  return option;
+}
+
+function selectedCleanStatuses(value) {
+  if (value === 'new') return ['new'];
+  if (value === 'running') return ['running'];
+  if (value === 'both') return ['new', 'running'];
+  return [];
+}
+
 function openConfirmation(action, value) {
   if (state.maintenanceActive) return;
   state.pendingAction = { action, value };
   elements.dialogBody.replaceChildren();
+  elements.dialogConfirm.disabled = false;
 
   if (action === 'clean') {
     elements.dialogTitle.textContent = 'Limpiar cola';
-    addParagraph('Se cancelarán:');
-    const impacts = document.createElement('div');
-    impacts.className = 'impact-list';
-    const newLine = document.createElement('span');
-    newLine.textContent = `${formatNumber(state.status?.queue?.new)} ejecuciones NEW`;
-    const runningLine = document.createElement('span');
-    runningLine.textContent = `${formatNumber(state.status?.queue?.running)} ejecuciones RUNNING`;
-    impacts.append(newLine, runningLine);
-    elements.dialogBody.append(impacts);
-    addParagraph('n8n será detenido temporalmente mientras se modifica la cola.');
+    addParagraph('Selecciona qué ejecuciones quieres cancelar:');
+    const choices = document.createElement('fieldset');
+    choices.className = 'clean-options';
+    choices.setAttribute('aria-label', 'Cola que se limpiará');
+    choices.append(
+      createCleanOption({
+        value: 'new',
+        label: 'Solo NEW',
+        count: `${formatNumber(state.status?.queue?.new)} ejecuciones pendientes`,
+      }),
+      createCleanOption({
+        value: 'running',
+        label: 'Solo RUNNING',
+        count: `${formatNumber(state.status?.queue?.running)} ejecuciones en curso`,
+      }),
+      createCleanOption({
+        value: 'both',
+        label: 'NEW y RUNNING',
+        count: `${formatNumber((state.status?.queue?.new || 0) + (state.status?.queue?.running || 0))} ejecuciones en total`,
+      }),
+    );
+    choices.addEventListener('change', (event) => {
+      const statuses = selectedCleanStatuses(event.target.value);
+      state.pendingAction = { action: 'clean', value: statuses };
+      elements.dialogConfirm.disabled = statuses.length === 0;
+    });
+    elements.dialogBody.append(choices);
+    addParagraph('n8n será detenido temporalmente mientras se modifica la cola. Las colas no seleccionadas no se modificarán.');
     addParagraph('Esta operación no se puede deshacer.', 'warning');
     elements.dialogConfirm.textContent = 'Confirmar limpieza';
+    elements.dialogConfirm.disabled = true;
   } else if (action === 'stop') {
     elements.dialogTitle.textContent = 'Detener n8n';
     addParagraph('El servicio n8n se ajustará a 0 réplicas. Las ejecuciones nuevas no se procesarán hasta iniciarlo nuevamente.');
@@ -247,11 +294,13 @@ function openConfirmation(action, value) {
     ? 'button button-danger'
     : 'button button-secondary';
   elements.dialog.showModal();
-  elements.dialogConfirm.focus();
+  if (action === 'clean') elements.dialogBody.querySelector('input[name="clean-scope"]')?.focus();
+  else elements.dialogConfirm.focus();
 }
 
 function closeDialog() {
   state.pendingAction = null;
+  elements.dialogConfirm.disabled = false;
   if (elements.dialog.open) elements.dialog.close();
 }
 
@@ -315,13 +364,15 @@ async function executePendingAction() {
     method: 'POST',
     headers: { 'X-Operation-Id': operationId },
     ...(pending.action === 'concurrency' ? { body: JSON.stringify({ value: pending.value }) } : {}),
+    ...(pending.action === 'clean' ? { body: JSON.stringify({ statuses: pending.value }) } : {}),
   };
 
   try {
     const result = await request(endpointFor(pending.action), options);
     await pollOperation(operationId);
     if (pending.action === 'clean') {
-      showFlash(`Limpieza completada: ${formatNumber(result.canceled)} ejecución(es) canceladas.`, 'success');
+      const scope = result.selectedStatuses.map((status) => status.toUpperCase()).join(' + ');
+      showFlash(`Limpieza ${scope} completada: ${formatNumber(result.canceled)} ejecución(es) canceladas.`, 'success');
     } else if (pending.action === 'concurrency') {
       showFlash(result.unchanged ? `La concurrencia ya es ${result.concurrency}.` : `Concurrencia cambiada a ${result.concurrency}.`, 'success');
     } else {

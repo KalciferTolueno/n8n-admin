@@ -1,0 +1,13 @@
+services:
+  n8n-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    expose:
+      - "3000"

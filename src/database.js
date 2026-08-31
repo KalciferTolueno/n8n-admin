@@ -11,8 +11,26 @@ const CLEAN_SQL = `
   UPDATE execution_entity
   SET status = 'canceled',
       "stoppedAt" = COALESCE("stoppedAt", NOW())
-  WHERE status IN ('new', 'running');
+  WHERE status::text = ANY($1::text[]);
 `;
+
+const ALLOWED_QUEUE_STATUSES = Object.freeze(['new', 'running']);
+
+function validateQueueStatuses(statuses) {
+  if (!Array.isArray(statuses) || statuses.length < 1 || statuses.length > ALLOWED_QUEUE_STATUSES.length) {
+    throw new TypeError('statuses must select NEW, RUNNING, or both');
+  }
+
+  const normalized = [...new Set(statuses)];
+  if (normalized.length !== statuses.length || normalized.some((status) => !ALLOWED_QUEUE_STATUSES.includes(status))) {
+    throw new TypeError('statuses must contain only unique values: new, running');
+  }
+  return normalized;
+}
+
+function remainingSelectedStatuses(counts, statuses) {
+  return validateQueueStatuses(statuses).filter((status) => Number(counts?.[status]) !== 0);
+}
 
 class Database {
   constructor(config) {
@@ -44,8 +62,9 @@ class Database {
     return counts;
   }
 
-  async cancelPendingExecutions() {
-    const result = await this.pool.query(CLEAN_SQL);
+  async cancelPendingExecutions(statuses) {
+    const selectedStatuses = validateQueueStatuses(statuses);
+    const result = await this.pool.query(CLEAN_SQL, [selectedStatuses]);
     return result.rowCount || 0;
   }
 
@@ -54,4 +73,11 @@ class Database {
   }
 }
 
-module.exports = { Database, QUEUE_SQL, CLEAN_SQL };
+module.exports = {
+  Database,
+  QUEUE_SQL,
+  CLEAN_SQL,
+  ALLOWED_QUEUE_STATUSES,
+  validateQueueStatuses,
+  remainingSelectedStatuses,
+};

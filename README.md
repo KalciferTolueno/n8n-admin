@@ -9,7 +9,7 @@ It is deliberately not a generic Docker administration panel: the only Docker se
 - Shows n8n replica state, `N8N_CONCURRENCY_PRODUCTION_LIMIT`, PostgreSQL availability, and `new` / `running` executions.
 - Requires its own HTTP Basic Auth for the UI and every `/api/*` endpoint. `/health` is deliberately public for platform health checks.
 - Stops and starts the named Swarm service through Docker Engine API using `dockerode` and `/var/run/docker.sock`.
-- Clears the queue only after a manual confirmation. The exact flow is: inspect → stop n8n → confirm `0/0` → check PostgreSQL → cancel → verify queue is empty → start n8n → confirm `1/1`.
+- Clears `NEW`, `RUNNING`, or both only after the operator explicitly selects a scope and confirms it. The exact flow is: inspect → stop n8n → confirm `0/0` → check PostgreSQL → cancel only the selected statuses → verify those statuses are empty → start n8n → confirm `1/1`.
 - Changes concurrency using stop → update service environment → start → verify, avoiding a rolling update while a host-mode port is already occupied.
 - Allows only one in-process maintenance operation at a time. Concurrent requests receive `409 Conflict`.
 - Keeps the latest 20 operation results in memory and exposes their safe summary through `/api/history`.
@@ -27,8 +27,10 @@ GROUP BY status;
 UPDATE execution_entity
 SET status = 'canceled',
     "stoppedAt" = COALESCE("stoppedAt", NOW())
-WHERE status IN ('new', 'running');
+WHERE status::text = ANY($1::text[]);
 ```
+
+The `$1` parameter is a server-validated array containing `new`, `running`, or both. The client cannot supply another execution status.
 
 ## Architecture
 
@@ -120,22 +122,18 @@ Expected response:
 
 Do not use the local `-p 3000:3000` example as the production EasyPanel exposure method.
 
-## Deploy on EasyPanel
+## Deploy on EasyPanel with Docker Compose
 
-1. Create a GitHub repository from this directory and push the code (exact commands are below).
-2. In EasyPanel, create an **App** from the GitHub repository. Select Dockerfile build; do not use Docker Compose.
-3. Set the exposed application port to `3000` within EasyPanel. Do **not** publish `3000` directly on the host when EasyPanel/Traefik provides the public route.
-4. Add all variables from `.env.example` in EasyPanel. Supply real `POSTGRES_PASSWORD`, `APP_USERNAME`, and `APP_PASSWORD` only in EasyPanel's secrets/environment UI.
-5. Ensure the app is attached to a network that can resolve `rp_n8n_db`. Keep `POSTGRES_HOST=rp_n8n_db`; do not substitute a container ID, IP, or `localhost`.
-6. Add this bind mount exactly:
+This repository includes `docker-compose.yml` so the Docker socket bind mount is declared in code. Create the Compose service in the **same EasyPanel project** as the existing n8n and PostgreSQL services.
 
-   | Host | Container |
-   | --- | --- |
-   | `/var/run/docker.sock` | `/var/run/docker.sock` |
+1. In EasyPanel, select **New Service → Compose**.
+2. Choose GitHub source, repository `KalciferTolueno/n8n-admin`, branch `main`, build path `/`, and Compose file `docker-compose.yml`.
+3. In the Environment editor, copy every variable from `.env.example` and supply the real `POSTGRES_PASSWORD`, `APP_USERNAME`, and `APP_PASSWORD`. Enable EasyPanel's **Create .env file** option so Compose receives those values at runtime. Never commit `.env`.
+4. Add an HTTPS domain such as `n8n-admin.midominio.com` and route it to the Compose service `n8n-admin` on port `3000`. Do **not** publish `3000` directly on the host.
+5. Configure EasyPanel Basic Auth as a second, distinct authentication layer.
+6. Deploy and open `/health`. A `{"status":"ok"}` response proves that the application started; then authenticate in the UI and verify the live service status before performing maintenance.
 
-7. Create an HTTPS domain such as `n8n-admin.midominio.com` in EasyPanel and route it to port 3000.
-8. Add EasyPanel Basic Auth in front of the app as a second authentication layer. The app's own Basic Auth remains required.
-9. Deploy, then open the domain and verify the displayed service status before performing maintenance.
+The Compose file mounts `/var/run/docker.sock` from the host to the same path inside the app. Do not override the Dockerfile entrypoint or container user: the entrypoint grants the unprivileged Node process access to the mounted socket. This host must be a Docker Swarm manager, and `N8N_SERVICE` must match the exact Swarm service name.
 
 The container starts its entrypoint as root briefly only to read the mounted socket's group ID. It then executes Node as the non-root `node` user with that supplemental group. Do not override the container user or entrypoint in EasyPanel; doing so can prevent access to `/var/run/docker.sock`.
 
@@ -160,6 +158,7 @@ If Docker access is unavailable, `/api/status` reports that the service status i
 - If the `UPDATE` or post-clean verification fails, the error is returned to the UI and the server still attempts to restart n8n.
 - If the queue was cleaned but n8n cannot be started, the response and UI explicitly say that the cleanup succeeded but service recovery failed.
 - Queue cleanup is never automatic, including when the `new` count is high. It requires an explicit modal confirmation each time.
+- The cleanup modal requires choosing `Solo NEW`, `Solo RUNNING`, or `NEW y RUNNING`. Unselected statuses are not updated and are not required to reach zero during verification.
 - The in-memory lock covers queue clean, start, stop, and concurrency changes. It is scoped to one container; run one app replica for this version.
 
 ## Docker socket warning

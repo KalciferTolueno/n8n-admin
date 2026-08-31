@@ -7,7 +7,11 @@ const { rateLimit } = require('express-rate-limit');
 const { config } = require('./config');
 const { logger } = require('./logger');
 const { basicAuth } = require('./auth');
-const { Database } = require('./database');
+const {
+  Database,
+  validateQueueStatuses,
+  remainingSelectedStatuses,
+} = require('./database');
 const { N8nService } = require('./docker');
 const {
   MaintenanceError,
@@ -72,7 +76,7 @@ async function startN8n(progress, operationId, timeoutSeconds = config.serviceSt
   });
 }
 
-async function performQueueClean(progress, operationId) {
+async function performQueueClean(progress, operationId, selectedStatuses) {
   let before = { new: 0, running: 0 };
   let canceled = 0;
   let after = null;
@@ -92,8 +96,13 @@ async function performQueueClean(progress, operationId) {
   try {
     await operationalStep(progress, operationId, 'inspect', 'Could not read the execution queue', async () => {
       before = await database.getQueueCounts();
-      logger.info('queue_clean_before', { operationId, new: before.new, running: before.running });
-      return `${before.new} NEW · ${before.running} RUNNING`;
+      logger.info('queue_clean_before', {
+        operationId,
+        selectedStatuses,
+        new: before.new,
+        running: before.running,
+      });
+      return selectedStatuses.map((status) => `${before[status]} ${status.toUpperCase()}`).join(' · ');
     });
 
     await stopN8n(progress, operationId, Math.min(config.serviceStopTimeoutSeconds, remainingCleanSeconds('stop')));
@@ -108,23 +117,29 @@ async function performQueueClean(progress, operationId) {
 
     remainingCleanSeconds('clean');
     await operationalStep(progress, operationId, 'clean', 'The queue UPDATE failed; no successful cleanup was reported', async () => {
-      canceled = await database.cancelPendingExecutions();
-      logger.info('queue_clean_canceled', { operationId, canceled });
+      canceled = await database.cancelPendingExecutions(selectedStatuses);
+      logger.info('queue_clean_canceled', { operationId, selectedStatuses, canceled });
       return `${canceled} ejecución(es) canceladas`;
     });
 
     remainingCleanSeconds('verify');
     await operationalStep(progress, operationId, 'verify', 'The queue was not completely cleared', async () => {
       after = await database.getQueueCounts();
-      logger.info('queue_clean_verified', { operationId, new: after.new, running: after.running });
-      if (after.new !== 0 || after.running !== 0) {
+      logger.info('queue_clean_verified', {
+        operationId,
+        selectedStatuses,
+        new: after.new,
+        running: after.running,
+      });
+      const remainingSelected = remainingSelectedStatuses(after, selectedStatuses);
+      if (remainingSelected.length > 0) {
         throw maintenanceError(
-          `The queue was not completely cleared. Remaining: ${after.new} NEW and ${after.running} RUNNING`,
+          `The selected queue was not completely cleared. Remaining: ${remainingSelected.map((status) => `${after[status]} ${status.toUpperCase()}`).join(' and ')}`,
           'verify',
-          { after },
+          { after, selectedStatuses },
         );
       }
-      return 'Cola verificada vacía';
+      return `${selectedStatuses.map((status) => status.toUpperCase()).join(' + ')} verificada(s) en 0`;
     });
   } catch (error) {
     operationError = error;
@@ -144,6 +159,7 @@ async function performQueueClean(progress, operationId) {
   if (operationError) {
     const details = {
       before,
+      selectedStatuses,
       canceled,
       ...(after ? { after } : {}),
       ...(restartedStatus ? { n8n: replicas(restartedStatus) } : {}),
@@ -166,6 +182,7 @@ async function performQueueClean(progress, operationId) {
         details: {
           cleanupSucceeded: true,
           before,
+          selectedStatuses,
           canceled,
           after,
         },
@@ -176,6 +193,7 @@ async function performQueueClean(progress, operationId) {
   return {
     success: true,
     before,
+    selectedStatuses,
     canceled,
     after,
     n8n: replicas(restartedStatus),
@@ -407,10 +425,20 @@ app.post('/api/n8n/start', adminRateLimiter, async (req, res, next) => {
 });
 
 app.post('/api/queue/clean', adminRateLimiter, async (req, res, next) => {
+  let selectedStatuses;
+  try {
+    selectedStatuses = validateQueueStatuses(req.body?.statuses);
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      error: 'statuses must select new, running, or both',
+    });
+  }
+
   try {
     req.operationId = requestOperationId(req.get('x-operation-id'));
-    logger.info('queue_clean_requested', { operationId: req.operationId });
-    await executeMaintenance(req, res, 'clean', (progress) => performQueueClean(progress, req.operationId));
+    logger.info('queue_clean_requested', { operationId: req.operationId, selectedStatuses });
+    await executeMaintenance(req, res, 'clean', (progress) => performQueueClean(progress, req.operationId, selectedStatuses));
   } catch (error) {
     next(error);
   }
