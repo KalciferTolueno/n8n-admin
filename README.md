@@ -6,11 +6,12 @@ It is deliberately not a generic Docker administration panel: the only Docker se
 
 ## What it does
 
-- Shows n8n replica state, `N8N_CONCURRENCY_PRODUCTION_LIMIT`, PostgreSQL availability, and `new` / `running` executions.
+- Shows n8n replica state (`online`, `offline`, `starting`, `stopping`, or `error`), `N8N_CONCURRENCY_PRODUCTION_LIMIT`, PostgreSQL availability, and `new` / `running` executions.
 - Requires its own HTTP Basic Auth for the UI and every `/api/*` endpoint. `/health` is deliberately public for platform health checks.
 - Stops and starts the named Swarm service through Docker Engine API using `dockerode` and `/var/run/docker.sock`.
+- Restarts n8n as a separate, confirmed operation using `0/0` → `1/1`; restarting never cleans the queue.
 - Clears `NEW`, `RUNNING`, or both only after the operator explicitly selects a scope and confirms it. The exact flow is: inspect → stop n8n → confirm `0/0` → check PostgreSQL → cancel only the selected statuses → verify those statuses are empty → start n8n → confirm `1/1`.
-- Changes concurrency using stop → update service environment → start → verify, avoiding a rolling update while a host-mode port is already occupied.
+- Changes concurrency to any integer from 1 through 200 using stop → update only `N8N_CONCURRENCY_PRODUCTION_LIMIT` → start → verify, avoiding a rolling update while a host-mode port is already occupied. Preset buttons remain available for common values.
 - Allows only one in-process maintenance operation at a time. Concurrent requests receive `409 Conflict`.
 - Keeps the latest 20 operation results in memory and exposes their safe summary through `/api/history`.
 
@@ -43,7 +44,7 @@ Express / Node.js 22 ── dockerode ── /var/run/docker.sock ── Docker 
         └────────────── pg ───────── POSTGRES_HOST service: rp_n8n_db
 ```
 
-The application resolves the Docker service by its configured name each time. It does not use a container ID, a fixed IP address, `localhost` for PostgreSQL, or `child_process` Docker commands.
+The application resolves the Docker service by its configured name each time. It does not use a container ID, a fixed IP address, `localhost` for PostgreSQL, or `child_process` Docker commands. For each Swarm replica slot, only the newest task generation determines health; an old failed or rejected task cannot override a newer running task.
 
 ## Requirements
 
@@ -145,7 +146,7 @@ After authenticating, `GET /api/status` is the primary operational check:
 curl --user "$APP_USERNAME:$APP_PASSWORD" https://n8n-admin.midominio.com/api/status
 ```
 
-Healthy output contains `postgres.status: "connected"` and the requested service name, without exposing the service's raw Docker configuration or any password.
+Healthy output contains `postgres.status: "connected"`, `n8n.status: "online"`, `taskState: "running"`, and the requested service name, without exposing the service's raw Docker configuration or any password. A true Docker/task failure includes a small safe `diagnostic` object that can also be opened with **Ver diagnóstico** in the dashboard.
 
 If PostgreSQL is unavailable, first verify that the n8n Admin app is connected to a Docker/EasyPanel network that can resolve `rp_n8n_db`. From a temporary diagnostic container on the **same network**, resolve the hostname with `getent hosts rp_n8n_db`. If it does not resolve, inspect the service/network name in EasyPanel or Swarm and update only `POSTGRES_HOST`; do not use a container ID or fixed IP.
 
@@ -159,7 +160,7 @@ If Docker access is unavailable, `/api/status` reports that the service status i
 - If the queue was cleaned but n8n cannot be started, the response and UI explicitly say that the cleanup succeeded but service recovery failed.
 - Queue cleanup is never automatic, including when the `new` count is high. It requires an explicit modal confirmation each time.
 - The cleanup modal requires choosing `Solo NEW`, `Solo RUNNING`, or `NEW y RUNNING`. Unselected statuses are not updated and are not required to reach zero during verification.
-- The in-memory lock covers queue clean, start, stop, and concurrency changes. It is scoped to one container; run one app replica for this version.
+- The in-memory lock covers queue clean, start, stop, restart, and concurrency changes. It is scoped to one container; run one app replica for this version.
 
 ## Docker socket warning
 

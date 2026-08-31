@@ -47,6 +47,7 @@
                 <div class="service-name">
                   <strong>n8n</strong>
                   <span id="n8nStatus">VERIFICANDO</span>
+                  <button class="diagnostic-link" id="diagnosticButton" type="button" hidden>Ver diagnóstico</button>
                 </div>
                 <dl class="service-values">
                   <div><dt>Réplicas</dt><dd id="n8nReplicas">—</dd></div>
@@ -88,6 +89,7 @@
           <div class="control-actions">
             <button class="button button-secondary" id="stopButton" type="button">Detener n8n</button>
             <button class="button button-secondary" id="startButton" type="button">Iniciar n8n</button>
+            <button class="button button-secondary" id="restartButton" type="button">Reiniciar n8n</button>
             <button class="button button-danger" id="cleanButton" type="button">Limpiar cola n8n</button>
           </div>
 
@@ -120,6 +122,14 @@
             <button type="button" data-concurrency="70">70</button>
             <button type="button" data-concurrency="80">80</button>
           </div>
+          <form class="concurrency-manual" id="concurrencyForm">
+            <div class="field-group">
+              <label for="concurrencyInput">Valor manual</label>
+              <input id="concurrencyInput" name="concurrency" type="number" inputmode="numeric" min="1" max="200" step="1" required aria-describedby="concurrencyHint">
+              <span id="concurrencyHint">Número entero entre 1 y 200</span>
+            </div>
+            <button class="button button-secondary" id="concurrencyApply" type="submit">Aplicar</button>
+          </form>
         </section>
 
         <section class="panel history-card" aria-labelledby="historyHeading">
@@ -156,6 +166,16 @@
           <button class="button button-danger" id="dialogConfirm" type="button">Confirmar</button>
         </div>
       </form>
+    </dialog>
+
+    <dialog class="diagnostic-dialog" id="diagnosticDialog" aria-labelledby="diagnosticTitle">
+      <div class="dialog-content">
+        <div class="dialog-title-row">
+          <h2 id="diagnosticTitle">Diagnóstico de n8n</h2>
+          <button class="dialog-close" id="diagnosticClose" type="button">Cerrar</button>
+        </div>
+        <dl class="diagnostic-details" id="diagnosticDetails"></dl>
+      </div>
     </dialog>
   </body>
 </html>

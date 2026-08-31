@@ -13,6 +13,7 @@ const {
   remainingSelectedStatuses,
 } = require('./database');
 const { N8nService } = require('./docker');
+const { validateConcurrency, CONCURRENCY_MIN, CONCURRENCY_MAX } = require('./validation');
 const {
   MaintenanceError,
   MaintenanceLock,
@@ -74,6 +75,18 @@ async function startN8n(progress, operationId, timeoutSeconds = config.serviceSt
     logger.info('n8n_started', { operationId, desiredReplicas: 1, runningReplicas: 1 });
     return `n8n activo (${status.runningReplicas}/${status.desiredReplicas})`;
   });
+}
+
+async function performRestart(progress, operationId) {
+  await stopN8n(progress, operationId);
+  await startN8n(progress, operationId);
+  const status = await n8n.getStatus();
+  logger.info('n8n_restarted', {
+    operationId,
+    desiredReplicas: status.desiredReplicas,
+    runningReplicas: status.runningReplicas,
+  });
+  return { success: true, ...replicas(status) };
 }
 
 async function performQueueClean(progress, operationId, selectedStatuses) {
@@ -201,7 +214,11 @@ async function performQueueClean(progress, operationId, selectedStatuses) {
 }
 
 async function performConcurrencyChange(progress, operationId, value) {
-  const current = await n8n.getConcurrency();
+  let current;
+  await operationalStep(progress, operationId, 'inspect', 'The current n8n concurrency could not be read', async () => {
+    current = await n8n.getConcurrency();
+    return `Concurrencia actual: ${current ?? 'no definida'}`;
+  });
   if (current === value) {
     return {
       success: true,
@@ -260,6 +277,7 @@ async function performConcurrencyChange(progress, operationId, value) {
         stage: operationError.stage || 'update',
         details: {
           ...(finalStatus ? { n8n: replicas(finalStatus) } : {}),
+          ...(finalStatus?.desiredReplicas === 1 && finalStatus?.runningReplicas === 1 ? { recoverySucceeded: true } : {}),
           ...(restartError ? { restartFailed: true } : {}),
         },
       },
@@ -301,10 +319,15 @@ function operationSteps(action) {
       { key: 'start', label: 'Iniciando n8n' },
     ],
     concurrency: [
+      { key: 'inspect', label: 'Leyendo configuración actual' },
       { key: 'stop', label: 'Deteniendo n8n' },
       { key: 'update', label: 'Actualizando configuración' },
       { key: 'start', label: 'Iniciando n8n' },
       { key: 'verify', label: 'Verificando concurrencia' },
+    ],
+    restart: [
+      { key: 'stop', label: 'Deteniendo n8n' },
+      { key: 'start', label: 'Iniciando n8n' },
     ],
   };
   return sets[action];
@@ -373,8 +396,14 @@ app.get('/api/status', async (req, res) => {
       desiredReplicas: 0,
       runningReplicas: 0,
       status: 'error',
+      taskState: 'unavailable',
       concurrency: null,
       error: 'Docker service status is unavailable',
+      diagnostic: {
+        taskState: 'unavailable',
+        message: String(n8nResult.reason?.message || 'Could not connect to the Docker Engine API').slice(0, 500),
+        ...(n8nResult.reason?.code ? { error: String(n8nResult.reason.code).slice(0, 80) } : {}),
+      },
     };
   const postgresConnected = queueResult.status === 'fulfilled';
 
@@ -424,6 +453,14 @@ app.post('/api/n8n/start', adminRateLimiter, async (req, res, next) => {
   }
 });
 
+app.post('/api/n8n/restart', adminRateLimiter, async (req, res, next) => {
+  try {
+    await executeMaintenance(req, res, 'restart', (progress) => performRestart(progress, req.operationId));
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post('/api/queue/clean', adminRateLimiter, async (req, res, next) => {
   let selectedStatuses;
   try {
@@ -445,11 +482,13 @@ app.post('/api/queue/clean', adminRateLimiter, async (req, res, next) => {
 });
 
 app.post('/api/n8n/concurrency', adminRateLimiter, async (req, res, next) => {
-  const value = req.body?.value;
-  if (!Number.isInteger(value) || !config.allowedConcurrency.includes(value)) {
+  let value;
+  try {
+    value = validateConcurrency(req.body?.value);
+  } catch (error) {
     return res.status(400).json({
       success: false,
-      error: `value must be one of: ${config.allowedConcurrency.join(', ')}`,
+      error: `value must be an integer between ${CONCURRENCY_MIN} and ${CONCURRENCY_MAX}`,
     });
   }
 

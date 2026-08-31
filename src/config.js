@@ -36,7 +36,6 @@ const config = Object.freeze({
   cleanTimeoutSeconds: integer('CLEAN_TIMEOUT_SECONDS', 120, { min: 10, max: 1800 }),
   serviceStartTimeoutSeconds: integer('SERVICE_START_TIMEOUT_SECONDS', 120, { min: 10, max: 1800 }),
   serviceStopTimeoutSeconds: integer('SERVICE_STOP_TIMEOUT_SECONDS', 120, { min: 10, max: 1800 }),
-  allowedConcurrency: Object.freeze([20, 30, 40, 50, 60, 70, 80]),
 });
 
 module.exports = { config };

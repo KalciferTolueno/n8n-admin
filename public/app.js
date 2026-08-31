@@ -7,6 +7,7 @@ const elements = {
   n8nStatus: document.querySelector('#n8nStatus'),
   n8nReplicas: document.querySelector('#n8nReplicas'),
   n8nConcurrency: document.querySelector('#n8nConcurrency'),
+  diagnosticButton: document.querySelector('#diagnosticButton'),
   postgresServiceRow: document.querySelector('#postgresServiceRow'),
   postgresStatus: document.querySelector('#postgresStatus'),
   postgresNote: document.querySelector('#postgresNote'),
@@ -15,8 +16,12 @@ const elements = {
   currentConcurrency: document.querySelector('#currentConcurrency'),
   stopButton: document.querySelector('#stopButton'),
   startButton: document.querySelector('#startButton'),
+  restartButton: document.querySelector('#restartButton'),
   cleanButton: document.querySelector('#cleanButton'),
   concurrencyOptions: document.querySelector('#concurrencyOptions'),
+  concurrencyForm: document.querySelector('#concurrencyForm'),
+  concurrencyInput: document.querySelector('#concurrencyInput'),
+  concurrencyApply: document.querySelector('#concurrencyApply'),
   operationPanel: document.querySelector('#operationPanel'),
   operationDescription: document.querySelector('#operationDescription'),
   operationIdLabel: document.querySelector('#operationIdLabel'),
@@ -28,6 +33,9 @@ const elements = {
   dialogClose: document.querySelector('#dialogClose'),
   dialogCancel: document.querySelector('#dialogCancel'),
   dialogConfirm: document.querySelector('#dialogConfirm'),
+  diagnosticDialog: document.querySelector('#diagnosticDialog'),
+  diagnosticDetails: document.querySelector('#diagnosticDetails'),
+  diagnosticClose: document.querySelector('#diagnosticClose'),
 };
 
 const state = {
@@ -41,6 +49,7 @@ const state = {
 const actionNames = {
   stop: 'Detener n8n',
   start: 'Iniciar n8n',
+  restart: 'Reiniciar n8n',
   clean: 'Limpiar cola',
   concurrency: 'Concurrencia',
 };
@@ -51,9 +60,10 @@ function formatNumber(value) {
 
 function statusLabel(status) {
   const labels = {
-    running: 'ONLINE',
-    stopped: 'OFFLINE',
-    transitioning: 'EN TRANSICIÓN',
+    online: 'ONLINE',
+    offline: 'OFFLINE',
+    starting: 'STARTING',
+    stopping: 'STOPPING',
     error: 'ERROR',
     connected: 'CONECTADO',
   };
@@ -61,7 +71,7 @@ function statusLabel(status) {
 }
 
 function serviceState(status) {
-  return ['running', 'stopped', 'transitioning', 'error', 'connected'].includes(status) ? status : 'unknown';
+  return ['online', 'offline', 'starting', 'stopping', 'error', 'connected'].includes(status) ? status : 'unknown';
 }
 
 function setText(element, value) {
@@ -106,6 +116,7 @@ function renderStatus(status) {
   setText(elements.n8nReplicas, `${n8n.runningReplicas}/${n8n.desiredReplicas}`);
   setText(elements.n8nConcurrency, n8n.concurrency ?? 'No definida');
   setText(elements.currentConcurrency, n8n.concurrency ?? 'No definida');
+  elements.diagnosticButton.hidden = !n8n.diagnostic;
 
   elements.postgresServiceRow.dataset.status = serviceState(postgres.status);
   setText(elements.postgresStatus, statusLabel(postgres.status));
@@ -116,9 +127,9 @@ function renderStatus(status) {
   setText(elements.queueNew, formatNumber(status.queue.new));
   setText(elements.queueRunning, formatNumber(status.queue.running));
 
-  const overall = n8n.status === 'running' && postgres.status === 'connected'
+  const overall = n8n.status === 'online' && postgres.status === 'connected'
     ? 'ESTADO NORMAL'
-    : (n8n.status === 'transitioning' ? 'MANTENIMIENTO' : 'REQUIERE ATENCIÓN');
+    : (['starting', 'stopping'].includes(n8n.status) ? 'MANTENIMIENTO' : 'REQUIERE ATENCIÓN');
   setText(elements.overallStatus, overall);
 
   renderControls();
@@ -127,17 +138,20 @@ function renderStatus(status) {
 function renderControls() {
   const isBusy = state.maintenanceActive || state.status?.maintenanceActive;
   const n8nStatus = state.status?.n8n?.status;
-  const dockerAvailable = Boolean(state.status) && n8nStatus !== 'error';
+  const dockerAvailable = Boolean(state.status) && state.status?.n8n?.taskState !== 'unavailable';
   const databaseAvailable = state.status?.postgres?.status === 'connected';
 
   elements.refreshButton.disabled = state.maintenanceActive;
-  elements.stopButton.disabled = isBusy || !dockerAvailable || n8nStatus === 'stopped';
-  elements.startButton.disabled = isBusy || !dockerAvailable || n8nStatus === 'running';
-  elements.cleanButton.disabled = isBusy || !databaseAvailable;
+  elements.stopButton.disabled = isBusy || !dockerAvailable || ['offline', 'stopping'].includes(n8nStatus);
+  elements.startButton.disabled = isBusy || !dockerAvailable || ['online', 'starting'].includes(n8nStatus);
+  elements.restartButton.disabled = isBusy || !dockerAvailable;
+  elements.cleanButton.disabled = isBusy || !databaseAvailable || !dockerAvailable;
+  elements.concurrencyInput.disabled = isBusy || !dockerAvailable;
+  elements.concurrencyApply.disabled = isBusy || !dockerAvailable;
 
   for (const button of elements.concurrencyOptions.querySelectorAll('button')) {
     const value = Number(button.dataset.concurrency);
-    button.disabled = isBusy || !Number.isInteger(state.status?.n8n?.concurrency);
+    button.disabled = isBusy || !dockerAvailable;
     button.setAttribute('aria-pressed', String(value === state.status?.n8n?.concurrency));
   }
 }
@@ -283,9 +297,14 @@ function openConfirmation(action, value) {
     elements.dialogTitle.textContent = 'Iniciar n8n';
     addParagraph('El servicio n8n se ajustará a 1 réplica y la aplicación esperará a que quede activo.');
     elements.dialogConfirm.textContent = 'Iniciar n8n';
+  } else if (action === 'restart') {
+    elements.dialogTitle.textContent = 'Reiniciar n8n';
+    addParagraph('n8n se detendrá hasta llegar a 0/0 y luego volverá a iniciarse hasta confirmar 1/1.');
+    addParagraph('La cola no se limpiará y ninguna ejecución se cancelará como parte de este reinicio.');
+    elements.dialogConfirm.textContent = 'Reiniciar n8n';
   } else if (action === 'concurrency') {
     elements.dialogTitle.textContent = 'Cambiar concurrencia';
-    addParagraph(`Cambiar concurrencia de ${state.status?.n8n?.concurrency} a ${value}.`);
+    addParagraph(`Cambiar concurrencia de ${state.status?.n8n?.concurrency ?? 'no definida'} a ${value}.`);
     addParagraph('n8n será detenido temporalmente, actualizado y luego iniciado.');
     elements.dialogConfirm.textContent = 'Aplicar';
   }
@@ -341,6 +360,7 @@ async function pollOperation(operationId) {
 function endpointFor(action) {
   if (action === 'stop') return '/api/n8n/stop';
   if (action === 'start') return '/api/n8n/start';
+  if (action === 'restart') return '/api/n8n/restart';
   if (action === 'clean') return '/api/queue/clean';
   return '/api/n8n/concurrency';
 }
@@ -380,9 +400,14 @@ async function executePendingAction() {
     }
   } catch (error) {
     await pollOperation(operationId);
-    const context = error.payload?.details?.cleanupSucceeded
-      ? ' La limpieza fue exitosa, pero n8n requiere atención inmediata.'
-      : '';
+    let context = '';
+    if (error.payload?.details?.cleanupSucceeded) {
+      context = ' La limpieza fue exitosa, pero n8n requiere atención inmediata.';
+    } else if (error.payload?.details?.recoverySucceeded) {
+      context = ' n8n fue restaurado correctamente a 1/1.';
+    } else if (error.payload?.details?.restartFailed) {
+      context = ' La recuperación de n8n también falló; requiere atención inmediata.';
+    }
     showFlash(`${error.message}${context}`, 'error');
   } finally {
     window.clearInterval(state.progressTimer);
@@ -405,6 +430,7 @@ elements.refreshButton.addEventListener('click', async () => {
 
 elements.stopButton.addEventListener('click', () => openConfirmation('stop'));
 elements.startButton.addEventListener('click', () => openConfirmation('start'));
+elements.restartButton.addEventListener('click', () => openConfirmation('restart'));
 elements.cleanButton.addEventListener('click', async () => {
   try {
     await loadStatus({ silent: true });
@@ -419,6 +445,56 @@ elements.concurrencyOptions.addEventListener('click', (event) => {
   if (!button || button.disabled) return;
   const value = Number(button.dataset.concurrency);
   if (value !== state.status?.n8n?.concurrency) openConfirmation('concurrency', value);
+});
+
+elements.concurrencyForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!elements.concurrencyForm.reportValidity()) return;
+  const value = elements.concurrencyInput.valueAsNumber;
+  if (!Number.isInteger(value) || value < 1 || value > 200) {
+    elements.concurrencyInput.setCustomValidity('Ingresa un número entero entre 1 y 200.');
+    elements.concurrencyInput.reportValidity();
+    return;
+  }
+  elements.concurrencyInput.setCustomValidity('');
+  if (value === state.status?.n8n?.concurrency) {
+    showFlash(`La concurrencia ya es ${value}.`);
+    return;
+  }
+  openConfirmation('concurrency', value);
+});
+
+elements.concurrencyInput.addEventListener('input', () => elements.concurrencyInput.setCustomValidity(''));
+
+function openDiagnostic() {
+  const diagnostic = state.status?.n8n?.diagnostic;
+  if (!diagnostic) return;
+  elements.diagnosticDetails.replaceChildren();
+  const fields = [
+    ['Estado de tarea', diagnostic.taskState],
+    ['Mensaje', diagnostic.message],
+    ['Error', diagnostic.error],
+    ['Código de salida', diagnostic.exitCode],
+  ];
+  for (const [label, value] of fields) {
+    if (value === undefined || value === null || value === '') continue;
+    const group = document.createElement('div');
+    const term = document.createElement('dt');
+    const detail = document.createElement('dd');
+    term.textContent = label;
+    detail.textContent = String(value);
+    group.append(term, detail);
+    elements.diagnosticDetails.append(group);
+  }
+  elements.diagnosticDialog.showModal();
+  elements.diagnosticClose.focus();
+}
+
+elements.diagnosticButton.addEventListener('click', openDiagnostic);
+elements.diagnosticClose.addEventListener('click', () => elements.diagnosticDialog.close());
+elements.diagnosticDialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+  elements.diagnosticDialog.close();
 });
 
 elements.dialogCancel.addEventListener('click', closeDialog);

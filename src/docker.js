@@ -27,6 +27,92 @@ function readConcurrency(service) {
   return Number.isInteger(value) && value >= 0 ? value : null;
 }
 
+function taskRecency(task) {
+  const createdAt = Date.parse(task.CreatedAt || '');
+  if (Number.isFinite(createdAt)) return createdAt;
+  const version = Number(task.Version?.Index);
+  if (Number.isFinite(version)) return version;
+  const updatedAt = Date.parse(task.UpdatedAt || '');
+  return Number.isFinite(updatedAt) ? updatedAt : 0;
+}
+
+function currentTasks(tasks) {
+  const latestBySlot = new Map();
+  for (const task of tasks || []) {
+    const slot = task.Slot ?? task.NodeID ?? task.ID;
+    const current = latestBySlot.get(slot);
+    if (!current || taskRecency(task) > taskRecency(current)) latestBySlot.set(slot, task);
+  }
+  return [...latestBySlot.values()];
+}
+
+function taskState(task) {
+  return task?.Status?.State || 'unknown';
+}
+
+function taskDiagnostic(task) {
+  if (!task) return null;
+  const diagnostic = { taskState: taskState(task) };
+  if (task.Status?.Message) diagnostic.message = task.Status.Message;
+  if (task.Status?.Err) diagnostic.error = task.Status.Err;
+  if (task.Status?.ContainerStatus?.ExitCode !== undefined) {
+    diagnostic.exitCode = task.Status.ContainerStatus.ExitCode;
+  }
+  return diagnostic;
+}
+
+function classifyServiceTasks(desiredReplicas, tasks) {
+  const relevantTasks = currentTasks(tasks);
+  const runningReplicas = relevantTasks.filter((task) => taskState(task) === 'running').length;
+  const states = relevantTasks.map(taskState);
+  const transitionalStates = new Set(['new', 'pending', 'assigned', 'accepted', 'preparing', 'ready', 'starting']);
+  const errorStates = new Set(['failed', 'rejected', 'orphaned']);
+
+  if (desiredReplicas === 0) {
+    return {
+      status: runningReplicas > 0 ? 'stopping' : 'offline',
+      runningReplicas,
+      taskState: runningReplicas > 0 ? 'running' : (states[0] || 'shutdown'),
+      diagnostic: null,
+    };
+  }
+
+  if (runningReplicas === desiredReplicas) {
+    return { status: 'online', runningReplicas, taskState: 'running', diagnostic: null };
+  }
+
+  if (runningReplicas > desiredReplicas) {
+    return { status: 'stopping', runningReplicas, taskState: 'running', diagnostic: null };
+  }
+
+  const transitionalTask = relevantTasks.find((task) => transitionalStates.has(taskState(task)));
+  if (transitionalTask || relevantTasks.length === 0) {
+    return {
+      status: 'starting',
+      runningReplicas,
+      taskState: transitionalTask ? taskState(transitionalTask) : 'pending',
+      diagnostic: null,
+    };
+  }
+
+  const failedTask = relevantTasks.find((task) => errorStates.has(taskState(task)));
+  if (failedTask) {
+    return {
+      status: 'error',
+      runningReplicas,
+      taskState: taskState(failedTask),
+      diagnostic: taskDiagnostic(failedTask),
+    };
+  }
+
+  return {
+    status: 'starting',
+    runningReplicas,
+    taskState: states[0] || 'pending',
+    diagnostic: null,
+  };
+}
+
 class N8nService {
   constructor(config) {
     this.serviceName = config.n8nService;
@@ -55,17 +141,16 @@ class N8nService {
     ]);
 
     const desiredReplicas = Number(data.Spec.Mode.Replicated.Replicas) || 0;
-    const runningReplicas = tasks.filter((task) => task.Status?.State === 'running').length;
-    let status = 'transitioning';
-    if (desiredReplicas === 0 && runningReplicas === 0) status = 'stopped';
-    if (desiredReplicas > 0 && desiredReplicas === runningReplicas) status = 'running';
+    const classified = classifyServiceTasks(desiredReplicas, tasks);
 
     return {
       service: this.serviceName,
       desiredReplicas,
-      runningReplicas,
-      status,
+      runningReplicas: classified.runningReplicas,
+      status: classified.status,
+      taskState: classified.taskState,
       concurrency: readConcurrency(data),
+      ...(classified.diagnostic ? { diagnostic: classified.diagnostic } : {}),
     };
   }
 
@@ -139,4 +224,10 @@ class N8nService {
   }
 }
 
-module.exports = { N8nService, DockerServiceError };
+module.exports = {
+  N8nService,
+  DockerServiceError,
+  classifyServiceTasks,
+  currentTasks,
+  readConcurrency,
+};

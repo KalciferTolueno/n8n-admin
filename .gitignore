@@ -3,6 +3,7 @@ node_modules/
 .env.*
 !.env.example
 npm-debug.log*
+preview-*.log
 .impeccable/config.local.json
 .impeccable/review/
 .impeccable/mocks/

@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "check": "node --check src/server.js && node --check src/config.js && node --check src/docker.js && node --check src/database.js && node --check src/maintenance.js && node --check src/auth.js && node --check src/logger.js && node --check public/app.js",
+    "check": "node --check src/server.js && node --check src/config.js && node --check src/docker.js && node --check src/database.js && node --check src/maintenance.js && node --check src/auth.js && node --check src/logger.js && node --check src/validation.js && node --check public/app.js",
     "test": "node --test"
   },
   "dependencies": {
